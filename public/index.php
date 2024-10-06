@@ -1,8 +1,10 @@
 <?php
 
 require __DIR__ . '/../vendor/autoload.php';
+require __DIR__ . '/../core/autoload.php';
 
 use App\Controllers\CarController;
+use Core\Router;
 
 $router = new Router();
 

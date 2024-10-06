@@ -1,7 +1,7 @@
 <?php
 
 namespace App\Controllers;
-use App\Core\Database;
+use Core\Database;
 
 class BaseController {
     protected $db;
