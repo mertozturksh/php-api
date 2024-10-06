@@ -8,7 +8,7 @@ use Core\Router;
 
 $router = new Router();
 
-$router->get('ping', function () {
+$router->get('/', function () {
     return "It's working!!";
 });
 
