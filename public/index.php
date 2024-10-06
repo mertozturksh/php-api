@@ -1,11 +1,6 @@
 <?php
 
-require_once __DIR__ . '/../core/Router.php';
-require_once __DIR__ . '/../core/Database.php';
-// include all PHP files under /app
-foreach (glob(__DIR__ . '/../app/{*,*/*}.php', GLOB_BRACE) as $filename) {
-    require_once $filename;
-}
+require __DIR__ . '/../vendor/autoload.php';
 
 use App\Controllers\CarController;
 

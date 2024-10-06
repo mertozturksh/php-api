@@ -1,0 +1,20 @@
+{
+    "name": "mertozturksh/php-api",
+    "description": "A lightweight and easy-to-use PHP framework for building RESTful APIs with minimal setup.",
+    "type": "project",
+    "license": "MIT",
+    "autoload": {
+        "psr-4": {
+            "App\\": "app/",
+            "Core\\": "core/"
+        }
+    },
+    "authors": [
+        {
+            "name": "Mert Öztürk",
+            "email": "mertozturksh@gmail.com"
+        }
+    ],
+    "minimum-stability": "stable",
+    "require": {}
+}
