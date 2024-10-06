@@ -27,3 +27,5 @@ logs/
 *.tmp
 *.swp
 *.log
+
+config/database.ini
