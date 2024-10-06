@@ -1,0 +1,29 @@
+# Composer vendor directory
+/vendor/
+
+# Composer lock file
+composer.lock
+
+# Cache and logs
+/cache/
+logs/
+
+# PHPStorm / IDE-specific files
+.idea/
+.vscode/
+*.sublime-project
+*.sublime-workspace
+
+# Ignore environment configuration files
+.env
+.env.local
+.env.*.local
+
+# Exclude database configuration
+# config/database.ini
+
+# Ignore other backup or temporary files
+*.bak
+*.tmp
+*.swp
+*.log
