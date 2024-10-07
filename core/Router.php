@@ -13,8 +13,7 @@ class Router
     protected $overridedParam = "_method";
     protected $outputEngine = 'json';
     protected $allowedOutputEngines = ["json", "xml"];
-    protected $errorHandlers = [];  // Hata yöneticileri
-
+    protected $errorHandlers = [];
     public function __construct()
     {
         $this->checkOutputFormat();
@@ -91,7 +90,7 @@ class Router
         foreach ($routes as $route => $callback) {
             $pattern = preg_replace('/:\w+/', '(\w+)', $route);
             if (preg_match("#^$pattern$#", $url, $matches)) {
-                array_shift($matches); // İlk eşleşmeyi kaldır
+                array_shift($matches);
                 echo $this->formatResponse(call_user_func_array($callback, $matches));
                 return true;
             }

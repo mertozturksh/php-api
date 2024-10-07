@@ -27,7 +27,7 @@ spl_autoload_register(function ($class) {
             if (file_exists($file)) {
                 require $file;
             } else {
-                echo "Dosya bulunamadı: " . $file;
+                echo "File could not find: " . $file;
                 exit;
             }
         }

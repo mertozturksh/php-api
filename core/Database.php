@@ -22,7 +22,6 @@ class Database {
         }
     }
 
-    // Tek kayıt getirir ve veriyi modele map eder
     public function get(BaseModel $model, $id)
     {
         $primaryKey = $model->getPrimaryKey();
@@ -33,13 +32,12 @@ class Database {
         $result = $stmt->fetch(PDO::FETCH_ASSOC);
 
         if ($result) {
-            $model->fill($result);  // Veritabanı sonucunu modele map eder
+            $model->fill($result);
         }
 
         return $model;
     }
 
-    // Tüm kayıtları getirir ve her bir kaydı modele map eder
     public function getAll(BaseModel $model)
     {
         $tableName = $model->getTableName();
@@ -48,8 +46,8 @@ class Database {
 
         $models = [];
         foreach ($results as $result) {
-            $instance = clone $model;  // Modelin yeni bir kopyasını oluştur
-            $instance->fill($result);  // Veritabanı sonucunu modele map eder
+            $instance = clone $model;
+            $instance->fill($result);
             $models[] = $instance;
         }
 

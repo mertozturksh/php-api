@@ -6,7 +6,6 @@ use App\Models\CarModel;
 
 class CarController extends BaseController
 {
-    // Tüm araçları getirme
     public function get_all_cars()
     {
         $query = new CarModel();
@@ -14,14 +13,12 @@ class CarController extends BaseController
         return $cars;
     }
 
-    // Belirli bir aracı ID ile getirme
     public function get_car($id)
     {
         $query = new CarModel();
         return $this->db->get($query, $id);
     }
 
-    // Yeni bir araç kaydı ekleme
     public function create_car($data)
     {
         $query = new CarModel();
@@ -34,7 +31,6 @@ class CarController extends BaseController
         return $this->db->insert($query);
     }
 
-    // Bir aracı güncelleme
     public function update_car($id, $data)
     {
         $query = new CarModel();
@@ -47,7 +43,6 @@ class CarController extends BaseController
         return $this->db->update($query, $id);
     }
 
-    // Bir aracı silme
     public function delete_car($id)
     {
         $query = new CarModel();
