@@ -2,44 +2,61 @@
 
 namespace Core;
 
+use App\Enums\OutputEngine;
+use App\Enums\RequestMethod;
+
 class Router
 {
-    private $getRoutes = [];
-    private $postRoutes = [];
-    private $putRoutes = [];
-    private $deleteRoutes = [];
-    protected $middlewares = [];
-    protected $overridedMethods = ["DELETE", "PUT"];
-    protected $overridedParam = "_method";
-    protected $outputEngine = 'json';
-    protected $allowedOutputEngines = ["json", "xml"];
-    protected $errorHandlers = [];
+    private $routeTable;
+    private $globalMiddlewares;
+    private $errorHandlers;
+    private $outputEngine;
+    private $allowedOutputEngines;
+    private $overridedMethods;
+    private $overridedParam;
+
     public function __construct()
     {
-        $this->checkOutputFormat();
+        $this->setInitialValues();
     }
 
-    public function get($route, $callback)
+    public function get($route, $callback, $middlewares = [])
     {
-        $this->getRoutes[$this->formatRoute($route)] = $callback;
+        $this->routeTable[RequestMethod::GET][$this->formatRoute($route)] = ['callback' => $callback, 'middlewares' => $middlewares];
     }
-    public function post($route, $callback)
+    public function post($route, $callback, $middlewares = [])
     {
-        $this->postRoutes[$this->formatRoute($route)] = $callback;
+        $this->routeTable[RequestMethod::POST][$this->formatRoute($route)] = ['callback' => $callback, 'middlewares' => $middlewares];
     }
-    public function put($route, $callback)
+    public function put($route, $callback, $middlewares = [])
     {
-        $this->putRoutes[$this->formatRoute($route)] = $callback;
+        $this->routeTable[RequestMethod::PUT][$this->formatRoute($route)] = ['callback' => $callback, 'middlewares' => $middlewares];
     }
-    public function delete($route, $callback)
+    public function patch($route, $callback, $middlewares = [])
     {
-        $this->deleteRoutes[$this->formatRoute($route)] = $callback;
+        $this->routeTable[RequestMethod::PATCH][$this->formatRoute($route)] = ['callback' => $callback, 'middlewares' => $middlewares];
     }
-
+    public function delete($route, $callback, $middlewares = [])
+    {
+        $this->routeTable[RequestMethod::DELETE][$this->formatRoute($route)] = ['callback' => $callback, 'middlewares' => $middlewares];
+    }
+    public function middleware($middlewareFunc, $timing = 'before')
+    {
+        $this->globalMiddlewares[] = ['callback' => $middlewareFunc, 'before' => $timing];
+    }
+    public function CORS()
+    {
+        header("Access-Control-Allow-Origin: *");
+        header("Access-Control-Allow-Methods: GET, POST, PUT, PATCH, DELETE, OPTIONS");
+        header("Access-Control-Allow-Headers: Content-Type");
+    }
+    public function bindError($errorCode, $callback)
+    {
+        $this->errorHandlers[$errorCode] = $callback;
+    }
     public function dispatch($url)
     {
         $url = parse_url($url, PHP_URL_PATH);
-
         $method = $_SERVER['REQUEST_METHOD'];
 
         if (isset($_REQUEST[$this->overridedParam]) && in_array(strtoupper($_REQUEST[$this->overridedParam]), $this->overridedMethods)) {
@@ -52,60 +69,100 @@ class Router
             exit();
         }
 
-        foreach ($this->middlewares as $middleware) {
-            call_user_func($middleware);
-        }
+        $this->runGlobalMiddlewares('before');
 
         $url = $this->formatRoute($url);
-
         switch ($method) {
-            case 'GET':
-                $this->handleRoute($url, $this->getRoutes);
+            case RequestMethod::GET:
+                $this->handleRoute($url, $this->routeTable[RequestMethod::GET]);
                 break;
-            case 'POST':
-                $this->handleRoute($url, $this->postRoutes);
+            case RequestMethod::POST:
+                $this->handleRoute($url, $this->routeTable[RequestMethod::POST]);
                 break;
-            case 'PUT':
-                $this->handleRoute($url, $this->putRoutes);
+            case RequestMethod::PUT:
+                $this->handleRoute($url, $this->routeTable[RequestMethod::PUT]);
                 break;
-            case 'DELETE':
-                $this->handleRoute($url, $this->deleteRoutes);
+            case RequestMethod::PATCH:
+                $this->handleRoute($url, $this->routeTable[RequestMethod::PATCH]);
+                break;
+            case RequestMethod::DELETE:
+                $this->handleRoute($url, $this->routeTable[RequestMethod::DELETE]);
                 break;
             default:
                 echo $this->formatResponse($this->callErrorHandler(405, 'Method not supported'));
                 break;
         }
+
+        $this->runGlobalMiddlewares('before');
     }
 
 
     private function handleRoute($url, $routes)
     {
-        if (isset($routes[$url])) {
-            echo $this->formatResponse($this->callRoute($routes[$url]));
+        $route = $routes[$url];
+        if (isset($route)) {
+
+            // call pre-middlewares
+            $this->runRouteMiddlewares($route['middlewares'], 'before');
+
+            // exec logic
+            $response = $this->callRoute($route['callback']);
+
+            // call post-middlewares
+            $this->runRouteMiddlewares($route['middlewares'], 'after', $response);
+
+            // return response
+            echo $this->formatResponse($response);
         } elseif ($this->matchDynamicRoute($url, $routes)) {
+            // dynamic route called
         } else {
             echo $this->formatResponse($this->callErrorHandler(404, 'Route not found'));
         }
     }
-
-    public function matchDynamicRoute($url, $routes)
+    private function runGlobalMiddlewares($timing)
     {
-        foreach ($routes as $route => $callback) {
+        foreach ($this->globalMiddlewares as $middleware) {
+            if ($middleware['before'] && $timing === 'before') {
+                call_user_func($middleware['callback']);
+            } elseif (!$middleware['before'] && $timing === 'after') {
+                call_user_func($middleware['callback']);
+            }
+        }
+    }
+    private function runRouteMiddlewares($middlewares, $timing, $response = null)
+    {
+        foreach ($middlewares as $middleware) {
+            if ($middleware['before'] && $timing === 'before') {
+                call_user_func($middleware['callback']);
+            } elseif (!$middleware['before'] && $timing === 'after') {
+                call_user_func($middleware['callback'], $response);
+            }
+        }
+    }
+    private function matchDynamicRoute($url, $routes)
+    {
+        foreach ($routes as $route => $routeDetails) {
             $pattern = preg_replace('/:\w+/', '(\w+)', $route);
             if (preg_match("#^$pattern$#", $url, $matches)) {
-                array_shift($matches);
-                echo $this->formatResponse(call_user_func_array($callback, $matches));
+                array_shift($matches); 
+
+                $this->runRouteMiddlewares($routeDetails['middlewares'], 'before');
+
+                $response = call_user_func_array($routeDetails['callback'], $matches);
+
+                $this->runRouteMiddlewares($routeDetails['middlewares'], 'after', $response);
+
+                echo $this->formatResponse($response);
+
                 return true;
             }
         }
         return false;
     }
-
     private function formatRoute($route)
     {
         return rtrim(ltrim($route, '/'), '/');
     }
-
     private function callRoute($callback)
     {
         if (is_callable($callback)) {
@@ -114,31 +171,13 @@ class Router
         return ['error' => 'Invalid callback'];
     }
 
-    public function CORS()
-    {
-        header("Access-Control-Allow-Origin: *");
-        header("Access-Control-Allow-Methods: GET, POST, PUT, DELETE, OPTIONS");
-        header("Access-Control-Allow-Headers: Content-Type");
-    }
-
-    public function middleware($middlewareFunc)
-    {
-        $this->middlewares[] = $middlewareFunc;
-    }
-
-    private function checkOutputFormat()
-    {
-        if (isset($_GET['format']) && in_array($_GET['format'], $this->allowedOutputEngines)) {
-            $this->outputEngine = $_GET['format'];
-        }
-    }
 
     private function formatResponse($response)
     {
         if (isset($response['status'])) {
             http_response_code($response['status']);
         } else {
-            http_response_code(200);
+            http_response_code(200);    // default 200
         }
 
         if (isset($response['status']) && $response['status'] >= 400) {
@@ -148,19 +187,16 @@ class Router
         }
 
         switch ($this->outputEngine) {
-            case 'json':
+            case OutputEngine::JSON:
                 header('Content-Type: application/json');
                 return json_encode($response);
-            case 'xml':
+            case OutputEngine::XML:
                 header('Content-Type: application/xml');
                 return $this->arrayToXml($response);
             default:
                 return json_encode($response);
         }
     }
-
-
-
     private function arrayToXml($data, &$xml_data = null)
     {
         if ($xml_data === null) {
@@ -178,17 +214,34 @@ class Router
 
         return $xml_data->asXML();
     }
-
-    public function bindError($errorCode, $callback)
-    {
-        $this->errorHandlers[$errorCode] = $callback;
-    }
-
     private function callErrorHandler($errorCode, $message = null)
     {
         if (isset($this->errorHandlers[$errorCode])) {
             return call_user_func($this->errorHandlers[$errorCode], $message);
         }
         return ['error' => "Error $errorCode", 'message' => $message];
+    }
+
+
+    private function setInitialValues()
+    {
+        $this->routeTable = [
+            RequestMethod::GET => [],
+            RequestMethod::POST => [],
+            RequestMethod::PUT => [],
+            RequestMethod::PATCH => [],
+            RequestMethod::DELETE => [],
+        ];
+
+        $this->outputEngine = OutputEngine::JSON;
+        $this->allowedOutputEngines = OutputEngine::getKeys();
+        $this->globalMiddlewares = [];
+        $this->errorHandlers = [];
+        $this->overridedParam = "_method";
+        $this->overridedMethods = ["DELETE", "PUT"];
+
+        if (isset($_GET['format']) && in_array($_GET['format'], $this->allowedOutputEngines)) {
+            $this->outputEngine = $_GET['format'];
+        }
     }
 }
