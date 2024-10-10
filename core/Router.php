@@ -38,6 +38,8 @@ class Router
 
     public function dispatch($url)
     {
+        $url = parse_url($url, PHP_URL_PATH);
+
         $method = $_SERVER['REQUEST_METHOD'];
 
         if (isset($_REQUEST[$this->overridedParam]) && in_array(strtoupper($_REQUEST[$this->overridedParam]), $this->overridedMethods)) {
@@ -74,6 +76,7 @@ class Router
                 break;
         }
     }
+
 
     private function handleRoute($url, $routes)
     {

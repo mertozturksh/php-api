@@ -33,9 +33,9 @@ class Database {
 
         if ($result) {
             $model->fill($result);
+            return $model;
         }
-
-        return $model;
+        return null;
     }
 
     public function getAll(BaseModel $model)

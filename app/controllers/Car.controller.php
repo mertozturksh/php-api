@@ -1,7 +1,6 @@
 <?php
 
 namespace App\Controllers;
-
 use App\Models\CarModel;
 
 class CarController extends BaseController
@@ -16,7 +15,11 @@ class CarController extends BaseController
     public function get_car($id)
     {
         $query = new CarModel();
-        return $this->db->get($query, $id);
+        $car = $this->db->get($query, $id);
+        if (!$car) {
+            return ['status' => 400, 'message' => 'Not found'];
+        }
+        return $car;
     }
 
     public function create_car($data)
