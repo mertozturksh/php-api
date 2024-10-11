@@ -4,13 +4,14 @@ use App\Controllers\CarController;
 use App\Controllers\TestController;
 use App\Middlewares\RequestLoggerMiddleware;
 
-// $router->middleware([RequestLoggerMiddleware::class, 'handle']);
+$router->middleware([RequestLoggerMiddleware::class, 'handle']);
 
 $router->get('/', function () {
     return "It's working!!";
-}, [
-    ['callback' => [RequestLoggerMiddleware::class, 'handle'], 'before' => true]
-]);
+}, //[
+//    ['callback' => [RequestLoggerMiddleware::class, 'handle'], 'before' => true]
+//]
+);
 
 $router->get('test', function () {
     $controller = new TestController();
