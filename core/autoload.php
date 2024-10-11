@@ -4,7 +4,9 @@ spl_autoload_register(function ($class) {
     $prefixes = [
         'App\\Controllers\\' => 'controllers',
         'App\\Enums\\' => 'enums',
-        'App\\Models\\' => 'models'
+        'App\\Models\\' => 'models',
+        'App\\Middlewares\\' => 'middlewares',
+        'App\\Exceptions\\' => 'exceptions'
     ];
 
     foreach ($prefixes as $prefix => $directory) {
@@ -20,6 +22,14 @@ spl_autoload_register(function ($class) {
             } elseif ($directory === 'models') {
                 $className = str_replace('Model', '', $className);
                 $suffix = '.model.php';
+            }
+            elseif ($directory === 'middlewares') {
+                $className = str_replace('Middleware', '', $className);
+                $suffix = '.middleware.php';
+            }
+            elseif ($directory === 'exceptions') {
+                $className = str_replace('Exception', '', $className);
+                $suffix = '.exception.php';
             }
 
             $file = __DIR__ . '/../app/' . $directory . '/' . $className . $suffix;

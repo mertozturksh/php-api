@@ -2,7 +2,7 @@
 
 namespace App\Enums;
 
-class Status extends BaseEnum {
+class StatusEnum extends BaseEnum {
     const ENABLED = 'enabled';
     const DISABLED = 'disabled';
 }

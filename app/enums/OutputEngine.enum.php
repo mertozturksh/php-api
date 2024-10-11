@@ -2,7 +2,7 @@
 
 namespace App\Enums;
 
-class OutputEngine extends BaseEnum
+class OutputEngineEnum extends BaseEnum
 {
     const JSON = 'json';
     const XML = 'xml';

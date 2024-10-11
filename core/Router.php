@@ -2,8 +2,8 @@
 
 namespace Core;
 
-use App\Enums\OutputEngine;
-use App\Enums\RequestMethod;
+use App\Enums\OutputEngineEnum;
+use App\Enums\RequestMethodEnum;
 
 class Router
 {
@@ -22,23 +22,23 @@ class Router
 
     public function get($route, $callback, $middlewares = [])
     {
-        $this->routeTable[RequestMethod::GET][$this->formatRoute($route)] = ['callback' => $callback, 'middlewares' => $middlewares];
+        $this->routeTable[RequestMethodEnum::GET][$this->formatRoute($route)] = ['callback' => $callback, 'middlewares' => $middlewares];
     }
     public function post($route, $callback, $middlewares = [])
     {
-        $this->routeTable[RequestMethod::POST][$this->formatRoute($route)] = ['callback' => $callback, 'middlewares' => $middlewares];
+        $this->routeTable[RequestMethodEnum::POST][$this->formatRoute($route)] = ['callback' => $callback, 'middlewares' => $middlewares];
     }
     public function put($route, $callback, $middlewares = [])
     {
-        $this->routeTable[RequestMethod::PUT][$this->formatRoute($route)] = ['callback' => $callback, 'middlewares' => $middlewares];
+        $this->routeTable[RequestMethodEnum::PUT][$this->formatRoute($route)] = ['callback' => $callback, 'middlewares' => $middlewares];
     }
     public function patch($route, $callback, $middlewares = [])
     {
-        $this->routeTable[RequestMethod::PATCH][$this->formatRoute($route)] = ['callback' => $callback, 'middlewares' => $middlewares];
+        $this->routeTable[RequestMethodEnum::PATCH][$this->formatRoute($route)] = ['callback' => $callback, 'middlewares' => $middlewares];
     }
     public function delete($route, $callback, $middlewares = [])
     {
-        $this->routeTable[RequestMethod::DELETE][$this->formatRoute($route)] = ['callback' => $callback, 'middlewares' => $middlewares];
+        $this->routeTable[RequestMethodEnum::DELETE][$this->formatRoute($route)] = ['callback' => $callback, 'middlewares' => $middlewares];
     }
     public function middleware($middlewareFunc, $timing = 'before')
     {
@@ -73,20 +73,20 @@ class Router
 
         $url = $this->formatRoute($url);
         switch ($method) {
-            case RequestMethod::GET:
-                $this->handleRoute($url, $this->routeTable[RequestMethod::GET]);
+            case RequestMethodEnum::GET:
+                $this->handleRoute($url, $this->routeTable[RequestMethodEnum::GET]);
                 break;
-            case RequestMethod::POST:
-                $this->handleRoute($url, $this->routeTable[RequestMethod::POST]);
+            case RequestMethodEnum::POST:
+                $this->handleRoute($url, $this->routeTable[RequestMethodEnum::POST]);
                 break;
-            case RequestMethod::PUT:
-                $this->handleRoute($url, $this->routeTable[RequestMethod::PUT]);
+            case RequestMethodEnum::PUT:
+                $this->handleRoute($url, $this->routeTable[RequestMethodEnum::PUT]);
                 break;
-            case RequestMethod::PATCH:
-                $this->handleRoute($url, $this->routeTable[RequestMethod::PATCH]);
+            case RequestMethodEnum::PATCH:
+                $this->handleRoute($url, $this->routeTable[RequestMethodEnum::PATCH]);
                 break;
-            case RequestMethod::DELETE:
-                $this->handleRoute($url, $this->routeTable[RequestMethod::DELETE]);
+            case RequestMethodEnum::DELETE:
+                $this->handleRoute($url, $this->routeTable[RequestMethodEnum::DELETE]);
                 break;
             default:
                 echo $this->formatResponse($this->callErrorHandler(405, 'Method not supported'));
@@ -122,20 +122,24 @@ class Router
     private function runGlobalMiddlewares($timing)
     {
         foreach ($this->globalMiddlewares as $middleware) {
+            $instance = new $middleware['callback'][0];
+
             if ($middleware['before'] && $timing === 'before') {
-                call_user_func($middleware['callback']);
+                call_user_func([$instance, $middleware['callback'][1]]);
             } elseif (!$middleware['before'] && $timing === 'after') {
-                call_user_func($middleware['callback']);
+                call_user_func([$instance, $middleware['callback'][1]]);
             }
         }
     }
     private function runRouteMiddlewares($middlewares, $timing, $response = null)
     {
         foreach ($middlewares as $middleware) {
+            $instance = new $middleware['callback'][0];
+
             if ($middleware['before'] && $timing === 'before') {
-                call_user_func($middleware['callback']);
+                call_user_func([$instance, $middleware['callback'][1]]);
             } elseif (!$middleware['before'] && $timing === 'after') {
-                call_user_func($middleware['callback'], $response);
+                call_user_func([$instance, $middleware['callback'][1]], $response);
             }
         }
     }
@@ -144,7 +148,7 @@ class Router
         foreach ($routes as $route => $routeDetails) {
             $pattern = preg_replace('/:\w+/', '(\w+)', $route);
             if (preg_match("#^$pattern$#", $url, $matches)) {
-                array_shift($matches); 
+                array_shift($matches);
 
                 $this->runRouteMiddlewares($routeDetails['middlewares'], 'before');
 
@@ -187,10 +191,10 @@ class Router
         }
 
         switch ($this->outputEngine) {
-            case OutputEngine::JSON:
+            case OutputEngineEnum::JSON:
                 header('Content-Type: application/json');
                 return json_encode($response);
-            case OutputEngine::XML:
+            case OutputEngineEnum::XML:
                 header('Content-Type: application/xml');
                 return $this->arrayToXml($response);
             default:
@@ -226,15 +230,15 @@ class Router
     private function setInitialValues()
     {
         $this->routeTable = [
-            RequestMethod::GET => [],
-            RequestMethod::POST => [],
-            RequestMethod::PUT => [],
-            RequestMethod::PATCH => [],
-            RequestMethod::DELETE => [],
+            RequestMethodEnum::GET => [],
+            RequestMethodEnum::POST => [],
+            RequestMethodEnum::PUT => [],
+            RequestMethodEnum::PATCH => [],
+            RequestMethodEnum::DELETE => [],
         ];
 
-        $this->outputEngine = OutputEngine::JSON;
-        $this->allowedOutputEngines = OutputEngine::getKeys();
+        $this->outputEngine = OutputEngineEnum::JSON;
+        $this->allowedOutputEngines = OutputEngineEnum::getKeys();
         $this->globalMiddlewares = [];
         $this->errorHandlers = [];
         $this->overridedParam = "_method";

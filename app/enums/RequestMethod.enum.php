@@ -2,7 +2,7 @@
 
 namespace App\Enums;
 
-class RequestMethod extends BaseEnum {
+class RequestMethodEnum extends BaseEnum {
     const GET = 'GET';
     const POST = 'POST';
     const PUT = 'PUT';
