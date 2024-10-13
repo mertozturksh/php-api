@@ -31,4 +31,8 @@ class Router extends CoreRouter
 
         $this->runGlobalMiddlewares('before');
     }
+
+    public function sdk() {
+        return $this->sdk;
+    }
 }

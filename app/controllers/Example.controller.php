@@ -3,19 +3,20 @@
 namespace App\Controllers;
 use App\Models\CarModel;
 
-class CarController extends BaseController
+class ExampleController extends BaseController
 {
+
     public function get_all_cars()
     {
         $query = new CarModel();
-        $cars = $this->db->getAll($query);
+        $cars = $this->sdk()->db()->getAll($query);
         return $cars;
     }
 
     public function get_car($id)
     {
         $query = new CarModel();
-        $car = $this->db->get($query, $id);
+        $car = $this->sdk()->db()->get($query, $id);
         if (!$car) {
             return ['status' => 400, 'message' => 'Not found'];
         }
@@ -31,7 +32,7 @@ class CarController extends BaseController
         $query->color = $data['color'];
         $query->price = $data['price'];
 
-        return $this->db->insert($query);
+        return $this->sdk()->db()->insert($query);
     }
 
     public function update_car($id, $data)
@@ -43,12 +44,12 @@ class CarController extends BaseController
         $query->color = $data['color'];
         $query->price = $data['price'];
 
-        return $this->db->update($query, $id);
+        return $this->sdk()->db()->update($query, $id);
     }
 
     public function delete_car($id)
     {
         $query = new CarModel();
-        return $this->db->delete($query, $id);
+        return $this->sdk()->db()->delete($query, $id);
     }
 }

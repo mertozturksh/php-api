@@ -1,6 +1,7 @@
 <?php
 
 namespace Core;
+
 use App\Enums\OutputEngineEnum;
 use App\Enums\RequestMethodEnum;
 
@@ -13,9 +14,11 @@ class CoreRouter
     protected $allowedOutputEngines;
     protected $overridedMethods;
     protected $overridedParam;
+    protected $sdk;
 
-    public function __construct()
+    public function __construct($sdk)
     {
+        $this->sdk = $sdk;
         $this->setInitialValues();
     }
 

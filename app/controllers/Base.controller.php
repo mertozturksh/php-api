@@ -1,13 +1,16 @@
 <?php
 
 namespace App\Controllers;
-use Core\Database;
 
 class BaseController {
-    protected $db;
+    public $sdkInstance;
 
-    public function __construct()
+    public function __construct($sdkInstance)
     {
-        $this->db = new Database(__DIR__ . '/../../config/database.ini');
+        $this->sdkInstance = $sdkInstance;
+    }
+
+    public function sdk() {
+        return $this->sdkInstance;
     }
 }
