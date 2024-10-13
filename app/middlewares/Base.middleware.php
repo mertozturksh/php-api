@@ -8,7 +8,13 @@ abstract class BaseMiddleware
 
     protected function logRequest($logMessage)
     {
-        $logFile = __DIR__ . '/../../logs/request.log';
+        $logDirectory = __DIR__ . '/../../logs';
+        $logFile = $logDirectory . '/request.log';
+
+        if (!is_dir($logDirectory)) {
+            mkdir($logDirectory, 0755, true); // Create the directory with proper permissions
+        }
+
         file_put_contents($logFile, $logMessage, FILE_APPEND);
     }
 
