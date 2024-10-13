@@ -12,6 +12,10 @@ class SDK
     {
         $this->dbInstance = new Database(__DIR__ . '/../config/database.ini');
     }
+    public function __destruct()
+    {
+        $this->dbInstance->disconnect();
+    }
 
 
     public function db()
@@ -28,5 +32,21 @@ class SDK
             return new $controllerClass($this);
         }
         throw new \Exception("Controller $controllerClass not found.");
+    }
+
+    public function checkVariables($variables, $fields) {
+        foreach ($fields as $field) {
+            if(!isset($variables[$field]) || empty($variables[$field])) {
+                return false;
+            }
+        }
+        return true;
+    }
+
+    public function isError($data) {
+        if (is_array($data) && isset($data['status']) && $data['status'] >= 400) {
+            return true;
+        }
+        return false;
     }
 }

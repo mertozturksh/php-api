@@ -108,6 +108,10 @@ class CoreRouter
 
         http_response_code($response['status'] ?? 200);
 
+        if ($response['status'] === 204) {
+            return;
+        }
+
         switch ($this->outputEngine) {
             case OutputEngineEnum::JSON:
                 header('Content-Type: application/json');
