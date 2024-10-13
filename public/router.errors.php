@@ -32,6 +32,14 @@ $router->bindError(404, function ($message) {
     ];
 });
 
+// 405 Not Found
+$router->bindError(405, function ($message) {
+    return [
+        "status" => 405,
+        "message" => $message ?? "Request method not allowed."
+    ];
+});
+
 // 500 Internal Server Error
 $router->bindError(500, function ($message) {
     return [
