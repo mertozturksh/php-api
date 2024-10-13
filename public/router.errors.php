@@ -32,7 +32,7 @@ $router->bindError(404, function ($message) {
     ];
 });
 
-// 405 Not Found
+// 405 Method not allowed
 $router->bindError(405, function ($message) {
     return [
         "status" => 405,
