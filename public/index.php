@@ -8,4 +8,4 @@ use Core\Router;
 $router = new Router();
 require __DIR__ . '/router.errors.php';
 require __DIR__ . '/router.rules.php';
-$router->dispatch($_SERVER['REQUEST_URI']);
+$router->dispatch();

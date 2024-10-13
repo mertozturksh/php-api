@@ -21,22 +21,16 @@ class CoreRouter
 
     protected function handleRoute($url, $routes)
     {
-        $route = $routes[$url];
-        if (isset($route)) {
+        if ($this->matchDynamicRoute($url, $routes)) {
+            // Dynamic route matched
+        } elseif (isset($routes[$url])) {
+            $route = $routes[$url];
 
-            // call pre-middlewares
             $this->runRouteMiddlewares($route['middlewares'], 'before');
-
-            // exec logic
             $response = $this->callRoute($route['callback']);
-
-            // call post-middlewares
             $this->runRouteMiddlewares($route['middlewares'], 'after', $response);
 
-            // return response
             echo $this->formatResponse($response);
-        } elseif ($this->matchDynamicRoute($url, $routes)) {
-            // dynamic route called
         } else {
             echo $this->formatResponse($this->callErrorHandler(404, 'Route not found'));
         }
@@ -73,13 +67,10 @@ class CoreRouter
                 array_shift($matches);
 
                 $this->runRouteMiddlewares($routeDetails['middlewares'], 'before');
-
                 $response = call_user_func_array($routeDetails['callback'], $matches);
-
                 $this->runRouteMiddlewares($routeDetails['middlewares'], 'after', $response);
 
                 echo $this->formatResponse($response);
-
                 return true;
             }
         }

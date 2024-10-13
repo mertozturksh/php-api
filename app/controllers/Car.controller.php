@@ -19,7 +19,7 @@ class CarController extends BaseController
         if (!$car) {
             return ['status' => 400, 'message' => 'Not found'];
         }
-        return $car;
+        return ['status' => 200, 'data' => $car];
     }
 
     public function create_car($data)
