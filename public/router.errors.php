@@ -3,7 +3,7 @@
 // 400 Bad Request
 $router->bindError(400, function ($message) {
     return [
-        "responseCode" => 400,
+        "status" => 400,
         "message" => $message ?? "Bad request."
     ];
 });
@@ -11,7 +11,7 @@ $router->bindError(400, function ($message) {
 // 401 Unauthorized 
 $router->bindError(401, function ($message) {
     return [
-        "responseCode" => 401,
+        "status" => 401,
         "message" => $message ?? "You're not authorized."
     ];
 });
@@ -19,7 +19,7 @@ $router->bindError(401, function ($message) {
 // 403 Forbidden
 $router->bindError(403, function ($message) {
     return [
-        "responseCode" => 403,
+        "status" => 403,
         "message" => $message ?? "Forbidden to access this resource."
     ];
 });
@@ -27,7 +27,7 @@ $router->bindError(403, function ($message) {
 // 404 Not Found
 $router->bindError(404, function ($message) {
     return [
-        "responseCode" => 404,
+        "status" => 404,
         "message" => $message ?? "The requested URL was not found."
     ];
 });
@@ -35,7 +35,7 @@ $router->bindError(404, function ($message) {
 // 500 Internal Server Error
 $router->bindError(500, function ($message) {
     return [
-        "responseCode" => 500,
+        "status" => 500,
         "message" => $message ?? "The server encountered an internal error."
     ];
 });

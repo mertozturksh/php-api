@@ -90,10 +90,11 @@ class CoreRouter
 
     protected function formatResponse($response)
     {
-        if (isset($response['status'])) {
-            http_response_code($response['status']);
-        } else {
-            http_response_code(200);    // default 200
+        if (!is_array($response) || !isset($response['status'])) {
+            $response = [
+                'status' => 200,
+                'data' => $response,
+            ];
         }
 
         if (isset($response['status']) && $response['status'] >= 400) {
@@ -101,6 +102,8 @@ class CoreRouter
                 $response = call_user_func($this->errorHandlers[$response['status']], $response['message'] ?? null);
             }
         }
+
+        http_response_code($response['status'] ?? 200);
 
         switch ($this->outputEngine) {
             case OutputEngineEnum::JSON:
