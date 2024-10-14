@@ -10,7 +10,7 @@ class SDK
 
     public function __construct()
     {
-        $this->dbInstance = new Database(__DIR__ . '/../config/database.ini');
+        $this->dbInstance = new Database();
     }
 
     public function db()

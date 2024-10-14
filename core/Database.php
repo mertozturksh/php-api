@@ -11,17 +11,18 @@ class Database
 {
     protected $db;
 
-    public function __construct($configFile)
+    public function __construct()
     {
-        $this->connect($configFile);
+        $this->connect();
     }
     public function __destruct()
     {
         $this->disconnect();
     }
 
-    public function connect($configFile)
+    public function connect()
     {
+        $configFile = __DIR__ . '/../config/database.ini';
         $config = parse_ini_file($configFile);
         $driver = $config['driver'];
         switch ($driver) {
@@ -30,6 +31,9 @@ class Database
                 break;
             case 'pgsql':
                 $dsn = "pgsql:host={$config['host']};dbname={$config['dbname']};port={$config['port']}";
+                break;
+            case 'sqlsrv':
+                $dsn = "sqlsrv:Server={$config['host']},{$config['port']};Database={$config['dbname']}";
                 break;
             case 'sqlite':
                 $dsn = "sqlite:{$config['dbname']}";
