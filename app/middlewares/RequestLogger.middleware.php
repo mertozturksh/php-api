@@ -4,7 +4,7 @@ namespace App\Middlewares;
 
 class RequestLoggerMiddleware extends BaseMiddleware
 {
-    public function handle($response = null)
+    public function handle($request, $next)
     {
         if (isset($_SERVER['HTTP_USER_AGENT']) && $_SERVER['REQUEST_METHOD'] !== 'OPTIONS') {
             $currentDate = $this->getCurrentDate();
@@ -15,6 +15,6 @@ class RequestLoggerMiddleware extends BaseMiddleware
             $this->logRequest($logMessage);
         }
 
-        // return $next($request);
+        return $next($request);
     }
 }

@@ -4,8 +4,10 @@ namespace App\Middlewares;
 
 abstract class BaseMiddleware
 {
-    abstract public function handle($response = null);
+    abstract public function handle($request, $next);
 
+
+    
     protected function logRequest($logMessage)
     {
         $logDirectory = __DIR__ . '/../../logs';

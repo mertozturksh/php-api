@@ -24,60 +24,61 @@ class CoreRouter
 
     protected function handleRoute($url, $routes)
     {
-        if ($this->matchDynamicRoute($url, $routes)) {
-            // Dynamic route matched
+        $matchedRoute = $this->matchDynamicRoute($url, $routes);
+        if ($matchedRoute) {
+            $route = $matchedRoute;
+
+            $this->runMiddlewares($route['middlewares'], function () use ($route) {
+                $response = call_user_func_array($route['callback'], $route['params']);
+                echo $this->formatResponse($response);
+            });
         } elseif (isset($routes[$url])) {
             $route = $routes[$url];
 
-            $this->runRouteMiddlewares($route['middlewares'], 'before');
-            $response = $this->callRoute($route['callback']);
-            $this->runRouteMiddlewares($route['middlewares'], 'after', $response);
-
-            echo $this->formatResponse($response);
+            $this->runMiddlewares($route['middlewares'], function () use ($route) {
+                $response = $this->callRoute($route['callback']);
+                echo $this->formatResponse($response);
+            });
         } else {
             echo $this->formatResponse($this->callErrorHandler(404, 'Route not found'));
-        }
-    }
-    protected function runGlobalMiddlewares($timing)
-    {
-        foreach ($this->globalMiddlewares as $middleware) {
-            $instance = new $middleware['callback'][0];
-
-            if ($middleware['before'] && $timing === 'before') {
-                call_user_func([$instance, $middleware['callback'][1]]);
-            } elseif (!$middleware['before'] && $timing === 'after') {
-                call_user_func([$instance, $middleware['callback'][1]]);
-            }
-        }
-    }
-    protected function runRouteMiddlewares($middlewares, $timing, $response = null)
-    {
-        foreach ($middlewares as $middleware) {
-            $instance = new $middleware['callback'][0];
-
-            if ($middleware['before'] && $timing === 'before') {
-                call_user_func([$instance, $middleware['callback'][1]]);
-            } elseif (!$middleware['before'] && $timing === 'after') {
-                call_user_func([$instance, $middleware['callback'][1]], $response);
-            }
         }
     }
     protected function matchDynamicRoute($url, $routes)
     {
         foreach ($routes as $route => $routeDetails) {
-            $pattern = preg_replace('/:\w+/', '(\w+)', $route);
-            if (preg_match("#^$pattern$#", $url, $matches)) {
+            if (strpos($route, ':') !== false) {
+                $pattern = preg_replace('/:\w+/', '(\w+)', $route);
+                $pattern = "#^" . $pattern . "$#";
+            } else {
+                $pattern = "#^" . preg_quote($route, '#') . "$#";
+            }
+            if (preg_match($pattern, $url, $matches)) {
                 array_shift($matches);
-
-                $this->runRouteMiddlewares($routeDetails['middlewares'], 'before');
-                $response = call_user_func_array($routeDetails['callback'], $matches);
-                $this->runRouteMiddlewares($routeDetails['middlewares'], 'after', $response);
-
-                echo $this->formatResponse($response);
-                return true;
+                return [
+                    'callback' => $routeDetails['callback'],
+                    'middlewares' => $routeDetails['middlewares'],
+                    'params' => $matches
+                ];
             }
         }
         return false;
+    }
+    protected function runMiddlewares($middlewares, $finalCallback)
+    {
+        $runner = function ($request) use (&$middlewares, $finalCallback) {
+            if (empty($middlewares)) {
+                return $finalCallback();
+            }
+
+            $middleware = array_shift($middlewares);
+            $instance = new $middleware['callback'][0];
+
+            return call_user_func([$instance, $middleware['callback'][1]], $request, function ($request) use (&$middlewares, $finalCallback) {
+                return $this->runMiddlewares($middlewares, $finalCallback);
+            });
+        };
+
+        $runner($_REQUEST);
     }
     protected function formatRoute($route)
     {
