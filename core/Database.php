@@ -13,9 +13,30 @@ class Database
 
     public function __construct($configFile)
     {
-        $config = parse_ini_file($configFile);
-        $dsn = "mysql:host={$config['host']};dbname={$config['dbname']};charset={$config['charset']};port={$config['port']}";
+        $this->connect($configFile);
+    }
+    public function __destruct()
+    {
+        $this->disconnect();
+    }
 
+    public function connect($configFile)
+    {
+        $config = parse_ini_file($configFile);
+        $driver = $config['driver'];
+        switch ($driver) {
+            case 'mysql':
+                $dsn = "mysql:host={$config['host']};dbname={$config['dbname']};charset={$config['charset']};port={$config['port']}";
+                break;
+            case 'pgsql':
+                $dsn = "pgsql:host={$config['host']};dbname={$config['dbname']};port={$config['port']}";
+                break;
+            case 'sqlite':
+                $dsn = "sqlite:{$config['dbname']}";
+                break;
+            default:
+                throw new Exception("Unsupported database driver: $driver");
+        }
         try {
             $this->db = new PDO($dsn, $config['username'], $config['password']);
             $this->db->setAttribute(PDO::ATTR_ERRMODE, PDO::ERRMODE_EXCEPTION);

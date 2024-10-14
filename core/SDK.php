@@ -12,11 +12,6 @@ class SDK
     {
         $this->dbInstance = new Database(__DIR__ . '/../config/database.ini');
     }
-    public function __destruct()
-    {
-        $this->dbInstance->disconnect();
-    }
-
 
     public function db()
     {
