@@ -2,6 +2,7 @@
 
 namespace App\Controllers;
 
+use App\Enums\AggregateFunctionEnum;
 use App\Models\CarModel;
 use Core\QueryGroup;
 use Core\QueryOperator;
@@ -71,21 +72,28 @@ class ExampleController extends BaseController
 
     // EXAMPLE FUNCTIONS
 
-    public function get_filtered_cars()
+    public function sample1()
     {
+        // = and >= operatör filter
+
         $query = new CarModel();
         $query->setWhere(new QueryOperator('brand', '=', 'Toyota'));
         $query->setWhere(new QueryOperator('year', '>=', 2020));
+        $query->setColumns(['brand', 'AVG(price) as average_price']);
         $query->setOrderBy('price', 'ASC');
 
         $cars = $this->sdk()->db()->select($query);
         return $cars;
     }
-    public function get_cars_in_price_range($minPrice, $maxPrice, $color)
+    public function sample2()
     {
+        // price range and color
+
+        $minPrice = 20000;
+        $maxPrice = 40000;
+        $color = 'Black';
         $query = new CarModel();
-        $query->setWhere(new QueryOperator('price', '>=', $minPrice));
-        $query->setWhere(new QueryOperator('price', '<=', $maxPrice));
+        $query->setWhere(new QueryOperator('price', 'BETWEEN', [$minPrice, $maxPrice]));
         $query->setWhere(new QueryOperator('color', '=', $color));
         $query->setOrderBy('created_at', 'DESC');
         $query->setLimit(0, 5);
@@ -93,16 +101,22 @@ class ExampleController extends BaseController
         $cars = $this->sdk()->db()->select($query);
         return $cars;
     }
-    public function get_average_price_by_brand($minPrice, $maxPrice)
+    public function sample3()
     {
+        // avg price
+
+        $minPrice = 25000;
+        $maxPrice = 40000;
         $query = new CarModel();
         $query->setWhere(new QueryOperator('price', 'BETWEEN', [$minPrice, $maxPrice]));
-        
-        $cars = $this->sdk()->db()->select($query);
-        return $cars;
+
+        $avg = $this->sdk()->db()->aggregate($query, AggregateFunctionEnum::AVG, 'price');
+        return $avg;
     }
-    public function get_cars_with_or_condition()
+    public function sample4()
     {
+        // query group
+
         $query = new CarModel();
 
         $group1 = new QueryGroup('AND');

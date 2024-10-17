@@ -105,16 +105,17 @@ class Database
             $stmt = $this->db->prepare($sql);
             $stmt->execute($whereClause['params']);
             $results = $stmt->fetchAll(PDO::FETCH_ASSOC);
+            return $results;
 
-            // return data
-            $models = [];
-            foreach ($results as $result) {
-                $instance = clone $model;
-                $instance->resetQueryOptions();
-                $instance->fill($result);
-                $models[] = $instance;
-            }
-            return $models;
+            // map data
+            // $models = [];
+            // foreach ($results as $result) {
+            //     $instance = clone $model;
+            //     $instance->resetQueryOptions();
+            //     $instance->fill($result);
+            //     $models[] = $instance;
+            // }
+            // return $models;
         } catch (Exception $e) {
             throw new Exception("Select query failed: " . $e->getMessage());
             return [];
