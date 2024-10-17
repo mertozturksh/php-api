@@ -12,6 +12,7 @@ class BaseModel
     protected $primaryKey;
     protected $queryOptions = [
         'columns' => ['*'],     // [selected columns]
+        'join' => null,         // [join expressions]
         'where' => [],          // [conditions]
         'limit' => null,        // [offset, limit]
         'orderBy' => null,      // [orderBy fields]
@@ -58,6 +59,14 @@ class BaseModel
         } else {
             $this->queryOptions['columns'] = $columns;
         }
+    }
+    public function setJoin($type, $table, $on)
+    {
+        if (!in_array(strtoupper($type), ['INNER', 'LEFT', 'RIGHT', 'FULL'])) {
+            throw new \InvalidArgumentException("Invalid join type: $type");
+        }
+
+        $this->queryOptions['joins'][] = strtoupper($type) . " JOIN $table ON $on";
     }
     public function setWhere($condition)
     {
@@ -126,5 +135,9 @@ class BaseModel
             $params = array_merge($params, $values);
         }
         return ['sql' => $whereSql, 'params' => $params];
+    }
+    public function getJoinClause()
+    {
+        return implode(' ', $this->queryOptions['join']);
     }
 }

@@ -79,6 +79,12 @@ class Database
         // create sql query
         $sql = "SELECT $columns FROM $tableName";
 
+        // JOIN conditions
+        $joinClause = $model->getJoinClause();
+        if (!empty($joinClause)) {
+            $sql .= ' ' . $joinClause;
+        }
+
         // WHERE conditions
         $whereClause = $model->getWhereClause();
         if (!empty($whereClause['sql'])) {

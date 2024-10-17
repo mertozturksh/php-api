@@ -136,4 +136,13 @@ class ExampleController extends BaseController
         $cars = $this->sdk()->db()->select($query);
         return $cars;
     }
+    public function sample5()
+    {
+        $model = new CarModel();
+        // $model->setColumns(['cars.brand', 'manufacturer.name', 'manufacturer.country']);
+        $model->setJoin('LEFT', 'manufacturers', 'cars.manufacturer_id = manufacturer.id');
+        $model->setLimit(0, 10);
+
+        $cars = $$this->sdk()->db()->select($model);
+    }
 }
