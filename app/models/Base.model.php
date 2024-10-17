@@ -12,7 +12,7 @@ class BaseModel
     protected $primaryKey;
     protected $queryOptions = [
         'columns' => ['*'],     // [selected columns]
-        'join' => null,         // [join expressions]
+        'join' => [],           // [join expressions]
         'where' => [],          // [conditions]
         'limit' => null,        // [offset, limit]
         'orderBy' => null,      // [orderBy fields]
@@ -59,6 +59,7 @@ class BaseModel
         } else {
             $this->queryOptions['columns'] = $columns;
         }
+        return $this;
     }
     public function setJoin($type, $table, $on)
     {
@@ -67,6 +68,7 @@ class BaseModel
         }
 
         $this->queryOptions['joins'][] = strtoupper($type) . " JOIN $table ON $on";
+        return $this;
     }
     public function setWhere($condition)
     {
@@ -75,10 +77,12 @@ class BaseModel
         } else {
             throw new \InvalidArgumentException("Condition must be QueryOperator or QueryGroup.");
         }
+        return $this;
     }
     public function setLimit(int $offset, int $limit)
     {
         $this->queryOptions['limit'] = [$offset, $limit];
+        return $this;
     }
     public function setOrderBy($field, $direction = 'ASC')
     {
@@ -90,6 +94,7 @@ class BaseModel
             throw new \InvalidArgumentException("Invalid order direction: $direction");
         }
         $this->queryOptions['orderBy'] = "$field $direction";
+        return $this;
     }
     public function setGroupBy($field)
     {
@@ -97,6 +102,7 @@ class BaseModel
             throw new \InvalidArgumentException("Invalid field name for group by: $field");
         }
         $this->queryOptions['groupBy'] = $field;
+        return $this;
     }
     public function getQueryOptions()
     {
